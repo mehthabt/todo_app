@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/css?family=Quicksand:300" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <style>
+    ::placeholder{
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      opacity: 0.5 !important;
+    }
+    .strike {
+      text-decoration: line-through;
+    }
+    a{
+      text-decoration: none !important;
+      color:#949494 !important;
+    }
+    a:hover{
+      color: #3f3f40 !important;
+    }
+    .back{
+width: 520px;
+height: auto;
+margin-top: 97px;
+background-color: rgb(255, 255, 255);
+border-radius: 4px;
+    }
+    .rowp{
+      position: relative !important;
+      top: 50px !important;
+    }
+    small{
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        opacity: 0.8;
+        font-size: 80% !important;
+    }
+    h1{
+      font-size: 80px !important;
+      font-family:'Quicksand', sans-serif !important;
+      font-weight: lighter !important;
+      color: #ffcccc  !important;
+      opacity: 0.6 !important;
+    }
+    .inbox{
+      width: 520px !important;
+      height:60px !important;
+      position: relative !important;
+      margin-left: -16px !important;
+      margin-top: -16px !important;
+    }
+    #elem{
+      font-size:28px;
+      padding:5px !important;
+    }
+    .cross{
+      position: absolute;
+      right:440px;
+    }
+    .tick{
+      width:60px;
+      height:30px  
+    }
+    .unstrike{
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      font-weight: lighter;
+    }
+    .strike{
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      font-weight: lighter;
+      opacity: 0.35;
+    }
+    .bg{
+      background-image: url("pic.jpg");
+      background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    opacity: 0.5;
+    }
+    </style>
+</head>
+<body style="background-color:rgb(240, 240, 240) ">
+  <div class="container">
+    <div class="row rowp"> <h1 class="mx-auto">todos</h1></div>
+    <div class="row">
+       <div class="back mx-auto shadow p-3 mb-5 bg-white rounded"> 
+        <div class="input-group mb-3 inbox">
+          <input type="text" style="height:60px !important" class="form-control" placeholder="New list to add...." aria-label="Recipient's username" aria-describedby="button-addon2">
+          <div class="input-group-append">
+            <button class="btn btn-outline-secondary pressadd" type="button" id="button-addon2"><i class="fa fa-pencil-square-o" style="font-size:26px;opacity: 0.5;"></i></button>
+          </div>
+        </div>
+        <div class="todos"></div>
+         <small>items left : <span class="num"> </span></small> 
+       <span style="float: right"><button type="button" class="btn btn-light entire">all</button>
+        <button type="button" class="btn btn-light act">active</button>
+        <button type="button" class="btn btn-light completed">completed</button>
+        <button type="button" class="btn btn-light clearc">clear completed</button>
+        </span>  
+      </div> 
+    </div></div>
+</body>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script>
+  $(document).ready(function () {
+    var count=0;
+    console.log("I am ready to start");
+    $.ajax({                                          //getting all on startup
+      url: 'http://localhost:6002/api/todo',
+      method: 'GET',
+      error: function (xhr, errorText) {
+        console.log("I made an error");
+        console.log(xhr, errorText)
+      },
+      success: function (data) {
+        console.log("I got it...")
+        console.log(data);
+        var html = '';
+        for (var i = 0; i < data.length; i++) {
+          html +=
+            `<div class="row border-bottom " id="elem">
+            <input class="tick" type="checkbox" data-id="${data[i].todo_id}" ${data[i].status == 1 ? `checked` : ``}>
+            <span id="change" data-id="${data[i].todo_id}" class=" ${data[i].status == 1 ? `strike` : `unstrike`}">${data[i].title}</span>
+            <a href='#' class="cross" data-id="${data[i].todo_id}" data-name="${data[i].status}"></a>
+            </div>`
+         if(data[i].status==0)
+         count++;
+        }
+        $('.todos').append(html);
+        $('.num').append(count);
+      },
+      complete: function (xhr) {
+        console.log("Completed...");
+        console.log(xhr);
+      }
+    });
+
+    $('.pressadd').on('click', function () {        //inputing new values
+      var name = $('input').val();
+      console.log("going to add", name)
+      $.ajax({
+        url: 'http://localhost:6002/api/todo',
+        method: 'POST',
+        data: {
+          title: name,
+          status:0
+        },
+        error: function (xhr, errorText) {
+          console.log("I made an error");
+          console.log(xhr, errorText)
+        },
+        success: function (data) {
+          console.log("I got it...")
+          console.log(data);
+          var html = ''
+          html +=
+          `<div class="row border-bottom" id="elem">
+          <input class="tick" type="checkbox"  data-id="${data.todo_id}" >
+          <span  id="change" class=" ${data.status == 1 ? `strike` : `unstrike`}">${data.title}</span>
+          <a href='#' class="cross" data-id="${data.todo_id}"></a>
+          </div>`
+           $('.num').empty().append(++count);
+          $('.todos').append(html);
+        },
+        complete: function (xhr) {
+          console.log("Completed...");
+          console.log(xhr);
+        }
+      });
+    });
+
+function updateData(data,cb){      //update
+$.ajax({
+        url: 'http://localhost:6002/api/todo',
+        method: 'PUT',
+        data:data,
+        error: function (xhr, errorText) {
+          console.log("I made an error");
+          console.log(xhr, errorText)
+          cb(errText,null)
+        },
+        success: function (data) {
+          console.log("status 1")
+          console.log(data);
+          cb(null, data)
+        },
+        complete: function (xhr) {
+          console.log("Completed...");
+          console.log(xhr);
+        }
+      });}
+
+
+    $('body').on('click', '.tick', function () {  //update on tick
+      var id = $(this).data('id');
+      var _self = this;
+      console.log(id);
+      var st=$(this).prop('checked') ? 1 : 0
+      updateData({todo_id: id,status:st}, function(err, data) {
+          if (err) {
+            console.log("I made an error");
+        console.log(xhr, errorText)
+          }
+        })
+        if(st==1) {
+            $('.num').empty().append(--count);
+            $(_self).next().addClass('strike');
+          } else {
+            $('.num').empty().append(++count);
+            $(_self).next().removeClass('strike');
+          }
+    });
+
+    $('body').on('click', '#change', function(){  //update title
+  var $el = $(this);    
+  $(this).prev('.tick').hide();      
+  var $input = $('<input/>').val( $el.text() );
+  $el.replaceWith( $input );
+  var save = function(){
+    var $p = $($el).text( $input.val() );
+    $(this).prev('.tick').show(); 
+    $input.replaceWith( $p );
+    var x=($p).text();
+    var tid=$($el).data('id')
+    console.log(x)
+    updateData({title:x,todo_id:tid}, function(err, data) {
+          if (err) {
+            console.log("I made an error");
+        console.log(xhr, errorText)
+          }  
+        })
+  };
+  $input.one('blur', save).focus();
+});
+
+
+  $("body").on('mouseenter','#elem',function () {      //clear button show
+$(this).find(".cross").empty().append($("<i class='material-icons'>clear</i>"));
+});
+$("body").on('mouseleave','#elem',function () {
+$(this).find(":last").remove();
+})
+
+function getData(newstatus,cb){   //function for all,active and completed
+  $.ajax({
+      url: 'http://localhost:6002/api/todo',
+      method: 'GET',
+      error: function (xhr, errorText) {
+        console.log("I made an error");
+        console.log(xhr, errorText)
+        cb(errorText,null);
+      },
+      success: function (data) {
+        console.log("I got it...")
+        console.log(data);
+        cb(null,data);
+        var html = ''
+        if(newstatus=='all')
+        for (var i = 0; i < data.length; i++) {
+          html +=
+            `<div class="row border-bottom " id="elem">
+            <input class="tick" type="checkbox" data-id="${data[i].todo_id}" ${data[i].status == 1 ? `checked` : ``}>
+            <span id=change data-id="${data[i].todo_id}" class=" ${data[i].status == 1 ? `strike` : `unstrike`}">${data[i].title}</span>
+            <a href='#' class="cross" data-id="${data[i].todo_id}" data-name="${data[i].status}"></a>
+            </div>`
+        }
+        else{
+        for (var i = 0; i < data.length; i++) {
+          if(data[i].status==newstatus)
+          html +=
+            `<div class="row border-bottom " id="elem">
+            <input class="tick" type="checkbox" data-id="${data[i].todo_id}" ${data[i].status == 1 ? `checked` : ``}>
+            <span id=change data-id="${data[i].todo_id}" class=" ${data[i].status == 1 ? `strike` : `unstrike`}">${data[i].title}</span>
+            <a href='#' class="cross" data-id="${data[i].todo_id}" data-name="${data[i].status}"></a>
+            </div>`
+        }}
+        $('.todos').empty().append(html);
+      },
+      complete: function (xhr) {
+        console.log("Completed...");
+        console.log(xhr);
+      }
+    });
+    }
+
+$(".entire").on('click',function () { //all button
+  getData('all', function(err, data) {
+          if (err) {
+            console.log("I made an error");
+        console.log(xhr, errorText)
+          }   
+        })
+  })
+
+  $(".act").on('click',function () { //active button
+    getData(0, function(err, data) {
+          if (err) {
+            console.log("I made an error");
+        console.log(xhr, errorText)
+          }   
+        })
+  })
+
+  $(".completed").on('click',function () { //completed button
+    getData(1, function(err, data) {
+          if (err) {
+            console.log("I made an error");
+        console.log(xhr, errorText)
+          }   
+        })
+  })
+
+
+  $('body').on('click','a',function (e) {  //deleting
+    e.preventDefault();
+    var newid=$(this).data('id');
+    var stat=$(this).data('name')
+    if(!($(this).siblings('input').is(':checked')))
+     $('.num').empty().append(--count);
+    $(this).parent().remove();
+    console.log("id",newid)
+    $.ajax({
+    url: 'http://localhost:6002/api/todo/',
+        method: 'DELETE',
+        data: {
+          todo_id: newid
+        },
+        error: function (xhr, errorText) {
+          console.log("I made an error");
+          console.log(xhr, errorText)
+        },
+        success: function (data) {
+          console.log("deleted")
+          console.log(data); 
+           
+        },
+        complete: function (xhr) {
+          console.log("Completed...");
+          console.log(xhr);
+        }
+      });
+    })
+
+     $(".clearc").on('click',function () {  //deleting on clear complete button
+      console.log("hi")
+      getData('all', function(err, data) {
+          if (err) {
+            console.log("I made an error");
+        console.log(xhr, errorText)
+          }   
+        })
+      $.ajax({
+         url: 'http://localhost:6002/api/todo/al',
+        method: 'DELETE',
+        data: {
+          status:1
+        },
+        error: function (xhr, errorText) {
+          console.log("I made an error");
+          console.log(xhr, errorText)
+        },
+        success: function (data) {
+          console.log("deleted")
+          console.log(data);  
+        },
+        complete: function (xhr) {
+          console.log("Completed...");
+          console.log(xhr);
+        }
+      });
+    })
+
+  });
+
+</script>
+</html>
